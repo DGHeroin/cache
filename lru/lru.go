@@ -2,7 +2,6 @@ package lru
 
 import (
     "container/list"
-    "log"
     "sync"
 )
 
@@ -35,7 +34,6 @@ func New(maxEntries uint64) *Cache {
         ll:         list.New(),
         cache:      make(map[interface{}]*list.Element),
     }
-    log.Println("=============", s.ll)
     return s
 }
 
@@ -136,7 +134,6 @@ func (c *Cache) Clear() {
 func (c *Cache) Range(fn func(key string, value interface{})) {
     c.mu.Lock()
     defer c.mu.Unlock()
-    log.Println(">>>",c.ll)
     if c.ll.Len() == 0 {
         return
     }
