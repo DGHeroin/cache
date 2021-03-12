@@ -30,7 +30,7 @@ type entry struct {
 
 func New(maxEntries uint64, maxMemory uint64) *Cache {
     if maxEntries == 0 {
-        maxEntries= ^uint64(0)
+        maxEntries = ^uint64(0)
     }
     if maxMemory == 0 {
         maxMemory = ^uint64(0)
@@ -153,7 +153,6 @@ func (c *Cache) lenLocked() uint64 {
     return uint64(c.ll.Len())
 }
 
-
 func (c *Cache) Clear() {
     c.mu.Lock()
     defer c.mu.Unlock()
@@ -163,12 +162,15 @@ func (c *Cache) Clear() {
             c.OnEvicted(kv.key, kv.value, RemoveTypeFullEntries)
         }
     }
-    c.ll = nil
-    c.cache = nil
+    c.ll = list.New()
+    c.cache = make(map[interface{}]*list.Element)
 }
 func (c *Cache) Range(fn func(key string, value interface{})) {
     c.mu.Lock()
     defer c.mu.Unlock()
+    if c.ll.Len() == 0 {
+        return
+    }
     e := c.ll.Front()
     for e != nil {
         kv := e.Value.(*entry)
@@ -177,12 +179,14 @@ func (c *Cache) Range(fn func(key string, value interface{})) {
     }
 }
 
-
 func (r RemoveReason) String() string {
     switch r {
-    case RemoveTypeFullEntries: return "Remove by full entries"
-    case RemoveTypeFullMemory: return "Remove by full memory"
-    case RemoveTypeByUser:return "Remove by user"
+    case RemoveTypeFullEntries:
+        return "Remove by full entries"
+    case RemoveTypeFullMemory:
+        return "Remove by full memory"
+    case RemoveTypeByUser:
+        return "Remove by user"
     }
     return "Unknown remove reason"
 }
